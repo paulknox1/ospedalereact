@@ -1,63 +1,41 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TextField from '@mui/material/TextField';
 import { Autocomplete } from '@mui/material';
 import {App} from "../App";
 import TablePazienti from './TablePazienti';
 import axios from 'axios';  
 
-class Combo extends React.Component{
-    constructor(props){
-        super(props);
-        this.state = {
-          medici : []
-        };
-        this.handleMedicoChange = this.handleMedicoChange.bind(this);
-      }
+const Combo = ({onMedicoChange}) => {
+    const [medici, setMedici] = useState([])
     
-    componentDidMount() {
+    useEffect(() => {
         axios.get(`http://localhost:8081/ospedale/getAllMedici`)
           .then(res => {
-            const medici = res.data;
-            this.setState({ medici });//, () => {
-                //console.log(this.state.medici)
-            //})
+            const med = res.data;
+            setMedici(med);
         })
-    }
+    },[])
 
 
-    handleMedicoChange = (e, value) => {
+    const handleMedicoChange = (e, value) => {
         const med = value;
-        console.log(value);
-
-        this.props.onMedicoChange(med);
-
-        //this.props.onchange(med);
-       // this.setState({ medico : med}, () => {
-         //   console.log(this.state.medico)
-        //})
-
+        onMedicoChange(med);
     }
 
-    render() { 
-        return (
+    return (
         <div className="combo">
           <Autocomplete
           disablePortal
           id="combo-box-demo"
-          onChange={this.handleMedicoChange}
-          options={this.state.medici.map(medico => medico.nome)}
+          onChange={handleMedicoChange}
+          options={medici.map(med => med.nome)}
           sx={{ width: 300, padding : 3 }}
           renderInput={(params) => <TextField {...params} label="Seleziona medico" />}
           />
         </div>
-        );
-    }
-
-
-
-
+    );
 }
 
 

@@ -8,7 +8,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
 import axios from 'axios';  
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { tableCellClasses } from '@mui/material/TableCell';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -33,65 +33,40 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 
 
-class TablePazienti extends React.Component {
+const TablePazienti = ({medico}) => {
+    const [pazienti, setPazienti] = useState([])
 
-
-    constructor(props){
-      super(props);
-      this.state = {
-        pazienti : []
-      };
-      console.log("medico " + this.props.medico);
-
-    }
-
-    componentDidMount() {
-      
+    useEffect(() => {
         axios.get(`http://localhost:8081/ospedale/getAllPazienti`)
         .then(res => {
-          const pazienti = res.data;
-          console.log(pazienti);
-          this.setState({ pazienti }, () => {
-              console.log(this.state.pazienti)
-          })
+          const paz = res.data;
+          setPazienti(paz); 
       })
-       this.props.resetHandler();
-
-    }
+    }, [])
 
 
-    componentDidUpdate() {
-      if (this.props.editMedico) {
-        if(this.props.medico != null){ 
-          axios.get(`http://localhost:8081/ospedale/getPazientiByNomeMedico/${this.props.medico}`)
+
+    useEffect(() => {
+        if(medico != null){ 
+          axios.get(`http://localhost:8081/ospedale/getPazientiByNomeMedico/${medico}`)
           .then(res => {
-            const pazienti = res.data;
-            console.log(pazienti);
-            this.setState({ pazienti }, () => {
-                console.log(this.state.pazienti)
-            })
+            const paz = res.data;
+            setPazienti( paz );
+            console.log(medico);
         })
-        this.props.resetHandler();
         } else {
           axios.get(`http://localhost:8081/ospedale/getAllPazienti`)
           .then(res => {
-            const pazienti = res.data;
-            console.log(pazienti);
-            this.setState({ pazienti }, () => {
-                console.log(this.state.pazienti)
-            })
-
-            
-          })
-          this.props.resetHandler();
+            console.log(medico);
+            const paz = res.data;
+            setPazienti(paz);
+        })
         }
-    
-      } 
-    }
+    }, [medico])
 
 
-    render() {
-      return (
+
+    return (
         <div className="tablepazienti">
           <h1>Pazienti</h1>
           <TableContainer component={Paper}>
@@ -109,7 +84,7 @@ class TablePazienti extends React.Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {this.state.pazienti.map((row) => (
+                {pazienti.map((row) => (
                   <StyledTableRow
                     key={row.id}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -124,8 +99,8 @@ class TablePazienti extends React.Component {
             </Table>
           </TableContainer>
         </div>
-      );
-    }
+    );
+    
   }
 
 
